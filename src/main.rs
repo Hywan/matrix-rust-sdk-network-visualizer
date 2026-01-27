@@ -1,3 +1,4 @@
+use ada_url::Url;
 use chrono::{DateTime, FixedOffset, TimeDelta};
 use regex::RegexBuilder;
 use std::{
@@ -177,6 +178,7 @@ fn main() {
                     Span {
                         status,
                         method,
+                        uri,
                         request_size,
                         response_size,
                         start_at,
@@ -184,14 +186,16 @@ fn main() {
                         ..
                     },
                 )| {
+                    let uri_components = Url::parse(uri, None).map(|uri| uri.components());
+
                     format!(
                         "    <tr>
-      <td>{connection_id}</td>
-      <td>{request_id}</td>
-      <td>{status}</td>
+      <td><code>{connection_id}</code></td>
+      <td><code>{request_id}</code></td>
+      <td data-status-family=\"{status_family}\"><span>{status}</span></td>
       <td>{method}</td>
-      <td>foo.bar</td>
-      <td>/baz/qux</td>
+      <td>{domain}</td>
+      <td>{path}</td>
       <td>{request_size}</td>
       <td>{response_size}</td>
       <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration}ms</span></div></td>
@@ -201,6 +205,17 @@ fn main() {
                         status = status
                             .map(|status| status.to_string())
                             .unwrap_or_else(|| "".to_owned()),
+                        status_family = status
+                            .map(|status| if status > 0 { status / 100 } else { 0 } )
+                            .unwrap_or_default(),
+                        domain = uri_components
+                            .as_ref()
+                            .map(|components| uri[components.host_start as usize..components.host_end as usize].to_string())
+                            .unwrap_or_default(),
+                        path = uri_components
+                            .as_ref()
+                            .map(|components| if let Some(pathname_start) = components.pathname_start { uri[pathname_start as usize..].to_string() } else { "".to_owned() })
+                            .unwrap_or_default(),
                         request_size = request_size
                             .clone()
                             .map(|request_size| request_size.to_string())

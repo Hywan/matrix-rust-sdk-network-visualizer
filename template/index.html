@@ -24,6 +24,8 @@
     --space-small: .5rem;
     --space: 1rem;
 
+    --border-radius: 3px;
+
     --color-accent: oklch(59.1% .236 10.25);
     --color-text: oklch(.84 0 0);
     --color-canvas: oklch(0.258 0.007 285.867);
@@ -69,10 +71,11 @@
   }
 
   body {
-    /* Thanks modernfontstacks.com */
     font-size: .95rem;
+    /* Thanks modernfontstacks.com */
     font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
     font-weight: normal;
+    font-variant-numeric: proportional-nums slashed-zero;
     color: var(--color-text);
     background: var(--color-canvas);
   }
@@ -96,6 +99,18 @@
         border: var(--color-canvas-lighterer) solid;
         border-width: 0 1px;
         padding: .15rem var(--space-small);
+      }
+
+      /* status */
+      > :nth-child(3) {
+        &[data-status-family] > span {
+          border-radius: var(--border-radius);
+          padding-inline: var(--space-very-small);
+          background-color: var(--_background, transparent);
+        }
+
+        &[data-status-family="2"] { --_background: oklch(0.524 0.164 145.0) }
+        &[data-status-family="5"] { --_background: red }
       }
 
       /* request size and response size */
@@ -123,7 +138,7 @@
           width: calc((var(--_duration) * 100%) / var(--_end-at));
           height: 100%;
           background: var(--color-accent);
-          border-radius: 3px;
+          border-radius: var(--border-radius);
 
           > span {
             position: absolute;
@@ -134,6 +149,13 @@
         }
       }
     }
+  }
+
+  code {
+    /* Thanks modernfontstacks.com */
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+    font-weight: normal;
+    font-size: .9em;
   }
   </style>
 
@@ -149,8 +171,8 @@
 <table>
   <thead>
     <tr>
-      <th scope="col">Conn. ID</th>
-      <th scope="col">Req. ID</th>
+      <th scope="col"><abbr title="Connection">Conn.</abbr> ID</th>
+      <th scope="col"><abbr title="Request">Req.</abbr> ID</th>
       <th scope="col">Status</th>
       <th scope="col">Method</th>
       <th scope="col">Domain</th>
