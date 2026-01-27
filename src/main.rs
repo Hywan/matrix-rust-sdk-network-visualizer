@@ -194,8 +194,8 @@ fn main() {
       <td><code>{request_id}</code></td>
       <td data-status-family=\"{status_family}\"><span>{status}</span></td>
       <td>{method}</td>
-      <td>{domain}</td>
-      <td>{path}</td>
+      <td title=\"{domain}\">{domain}</td>
+      <td title=\"{path}\">{path}</td>
       <td>{request_size}</td>
       <td>{response_size}</td>
       <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration}ms</span></div></td>

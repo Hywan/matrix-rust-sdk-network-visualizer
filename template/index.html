@@ -113,6 +113,15 @@
         &[data-status-family="5"] { --_background: red }
       }
 
+      /* domain and path */
+      > :nth-child(5),
+      > :nth-child(6) {
+        direction: rtl;
+        text-overflow: "…";
+        max-width: 20ch;
+        overflow: hidden;
+      }
+
       /* request size and response size */
       > :nth-child(7),
       > :nth-child(8) {
