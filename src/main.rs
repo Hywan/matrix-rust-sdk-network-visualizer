@@ -194,7 +194,7 @@ fn main() {
       <td>/baz/qux</td>
       <td>{request_size}</td>
       <td>{response_size}</td>
-      <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"></div></td>
+      <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration}ms</div></td>
     </tr>
 ",
                         connection_id = connection_id.clone(),

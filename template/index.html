@@ -24,7 +24,11 @@
     --space-small: .5rem;
     --space: 1rem;
 
-     --color-accent: oklch(59.1% .236 10.25);
+    --color-accent: oklch(59.1% .236 10.25);
+    --color-text: oklch(.84 0 0);
+    --color-canvas: oklch(0.258 0.007 285.867);
+    --color-canvas-lighter: oklch(0.303 0.007 285.966);
+    --color-canvas-lighterer: oklch(0.343 0.009 285.935);
   }
 
   .content-grid {
@@ -64,38 +68,69 @@
     }
   }
 
+  body {
+    /* Thanks modernfontstacks.com */
+    font-size: .95rem;
+    font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+    font-weight: normal;
+    color: var(--color-text);
+    background: var(--color-canvas);
+  }
+
   main {
     padding-inline: var(--space);
   }
 
   main > table {
     width: 100%;
-    border-spacing: var(--space-small) var(--space-very-small);
+    border-spacing: 0;
 
-    & tr > * {
-      white-space: nowrap;
-    }
+    tr {
+      &:nth-child(even) {
+        background: var(--color-canvas-lighter);
+      }
 
-    & tr > :last-child {
-      --_end-at: var(--end-at, 100);
+      > * {
+        white-space: nowrap;
+        border: var(--color-canvas-lighterer) solid;
+        border-width: 0 1px;
+        padding: .15rem var(--space-small);
+      }
 
-      width: 100%;
-      max-width: 0;
+      /* request size and response size */
+      > :nth-child(7),
+      > :nth-child(8) {
+        text-align: right;
+      }
 
-      position: relative;
+      > :last-child {
+        --_end-at: var(--end-at, 100);
 
-      .span {
-        --_start-at: var(--start-at, 0);
-        --_duration: var(--duration);
+        width: 100%;
+        max-width: 0;
 
-        display: block;
-        position: absolute;
-        top: 0;
-        left: calc((var(--_start-at) * 100%) / var(--_end-at));
-        width: calc((var(--_duration) * 100%) / var(--_end-at));
-        height: 100%;
-        background: var(--color-accent);
-        border-radius: var(--space-small);
+        position: relative;
+
+        .span {
+          --_start-at: var(--start-at, 0);
+          --_duration: var(--duration);
+
+          display: block;
+          position: absolute;
+          top: 0;
+          left: calc((var(--_start-at) * 100%) / var(--_end-at));
+          width: calc((var(--_duration) * 100%) / var(--_end-at));
+          height: 100%;
+          background: var(--color-accent);
+          border-radius: 3px;
+
+          > span {
+            position: absolute;
+            font-size: small;
+            top: 10%;
+            left: calc(100% + var(--space-very-small));
+          }
+        }
       }
     }
   }
@@ -119,8 +154,8 @@
       <th scope="col">Method</th>
       <th scope="col">Domain</th>
       <th scope="col">Path</th>
-      <th scope="col">Req. size</th>
-      <th scope="col">Resp. size</th>
+      <th scope="col"><abbr title="Request">Req.</abbr> size</th>
+      <th scope="col"><abbr title="Response">Resp.</abbr> size</th>
       <th scope="col">Time</th>
     </tr>
   </thead>
@@ -128,51 +163,6 @@
   <tbody style="--end-at: {end_at}">
     {rows}
   </tbody>
-
-  <!--
-  <tbody style="--end-at: 5.4">
-    <tr>
-      <td>room-list</td>
-      <td>1</td>
-      <td>200</td>
-      <td>GET</td>
-      <td>matrix.org</td>
-      <td>/sync</td>
-      <td>2.8Kib</td>
-      <td><div class="span" style="--start-at: 0; --duration: 3.2"></div></td>
-    </tr>
-    <tr>
-      <td>room-list</td>
-      <td>2</td>
-      <td>200</td>
-      <td>GET</td>
-      <td>matrix.org</td>
-      <td>/sync</td>
-      <td>1.1Kib</td>
-      <td><div class="span" style="--start-at: 1.2; --duration: 1.4"></div></td>
-    </tr>
-    <tr>
-      <td>room-list</td>
-      <td>3</td>
-      <td>200</td>
-      <td>GET</td>
-      <td>matrix.org</td>
-      <td>/sync</td>
-      <td>2.4Kib</td>
-      <td><div class="span" style="--start-at: 3.2; --duration: 1.2"></div></td>
-    </tr>
-    <tr>
-      <td>room-list</td>
-      <td>4</td>
-      <td>200</td>
-      <td>GET</td>
-      <td>matrix.org</td>
-      <td>/sync</td>
-      <td>5.2Kib</td>
-      <td><div class="span" style="--start-at: 4.3; --duration: 1.1"></div></td>
-    </tr>
-  </tbody>
-  -->
 </table>
 
 </main>
