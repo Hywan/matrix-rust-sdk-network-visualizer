@@ -204,10 +204,10 @@ fn main() {
                         connection_id = connection_id.clone(),
                         status = status
                             .map(|status| status.to_string())
-                            .unwrap_or_else(|| "".to_owned()),
+                            .unwrap_or_else(|| "🞪".to_owned()),
                         status_family = status
-                            .map(|status| if status > 0 { status / 100 } else { 0 } )
-                            .unwrap_or_default(),
+                            .map(|status| (if status > 0 { status / 100 } else { 0 } ).to_string())
+                            .unwrap_or_else(|| "cancelled".to_owned()),
                         domain = uri_components
                             .as_ref()
                             .map(|components| uri[components.host_start as usize..components.host_end as usize].to_string())
