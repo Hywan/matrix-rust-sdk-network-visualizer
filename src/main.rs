@@ -187,6 +187,7 @@ fn main() {
                     },
                 )| {
                     let uri_components = Url::parse(uri, None).map(|uri| uri.components());
+                    let duration = duration.num_milliseconds();
 
                     format!(
                         "    <tr>
@@ -198,7 +199,7 @@ fn main() {
       <td title=\"{path}\">{path}</td>
       <td>{request_size}</td>
       <td>{response_size}</td>
-      <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration}ms</span></div></td>
+      <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration_label}</span></div></td>
     </tr>
 ",
                         connection_id = connection_id.clone(),
@@ -227,7 +228,7 @@ fn main() {
                         start_at = start_at
                             .timestamp_millis()
                             .saturating_sub(smallest_start_at),
-                        duration = duration.num_milliseconds(),
+                        duration_label = if duration > 0 { format!("{duration}ms") } else { "<em>cancelled</em>".to_owned() }
                     )
                 },
             )
