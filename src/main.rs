@@ -194,7 +194,7 @@ fn main() {
       <td><code>{connection_id}</code></td>
       <td><code>{request_id}</code></td>
       <td data-status-family=\"{status_family}\"><span>{status}</span></td>
-      <td>{method}</td>
+      <td><code>{method}</code></td>
       <td title=\"{domain}\">{domain}</td>
       <td title=\"{path}\">{path}</td>
       <td>{request_size}</td>

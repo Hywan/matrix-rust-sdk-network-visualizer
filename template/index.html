@@ -110,6 +110,12 @@
         background: var(--color-canvas-lighter);
       }
 
+      &:hover {
+        outline: 1px gray dashed;
+        outline-offset: var(--space-very-small);
+        border-radius: 2px;
+      }
+
       /* request ID */
       > :nth-child(2) {
         text-align: end;
@@ -132,11 +138,11 @@
       }
 
       /* domain and path */
-      > :nth-child(5) { --_column-width: 10ch }
-      > :nth-child(6) { --_column-width: 10ch }
+      > :nth-child(5) { --_column-width: 15ch; --_dir: ltr }
+      > :nth-child(6) { --_column-width: 20ch; --_dir: rtl }
       > :nth-child(5),
       > :nth-child(6) {
-        direction: rtl;
+        direction: var(--_dir);
         text-overflow: "…";
         max-width: var(--_column-width);
         overflow: hidden;
@@ -219,7 +225,7 @@
       <th scope="col"><abbr title="Connection">Conn.</abbr> ID</th>
       <th scope="col"><abbr title="Request">Req.</abbr> ID</th>
       <th scope="col">Status</th>
-      <th scope="col">Method</th>
+      <th scope="col"><abbr title="Method">Meth.</th>
       <th scope="col">Domain</th>
       <th scope="col">Path</th>
       <th scope="col"><abbr title="Request">Req.</abbr> size</th>
