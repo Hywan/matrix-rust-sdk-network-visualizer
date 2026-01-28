@@ -132,11 +132,13 @@
       }
 
       /* domain and path */
+      > :nth-child(5) { --_column-width: 10ch }
+      > :nth-child(6) { --_column-width: 10ch }
       > :nth-child(5),
       > :nth-child(6) {
         direction: rtl;
         text-overflow: "…";
-        max-width: 20ch;
+        max-width: var(--_column-width);
         overflow: hidden;
       }
 
@@ -166,12 +168,13 @@
           --_start-at: var(--start-at, 0);
           --_duration: var(--duration);
           --_background: var(--color-accent);
+          --_end-gutter: 10ch; /* spaces for the labels */
 
           display: block;
           position: absolute;
           top: 0;
-          left: calc((var(--_start-at) * 100%) / var(--_end-at));
-          width: calc((var(--_duration) * 100%) / var(--_end-at));
+          left: calc((var(--_start-at) * (100% - var(--_end-gutter))) / var(--_end-at));
+          width: max(1px, calc((var(--_duration) * (100% - var(--_end-gutter))) / var(--_end-at)));
           height: 100%;
           background: var(--_background);
           border-radius: var(--border-radius);
@@ -184,7 +187,7 @@
           > span {
             position: absolute;
             font-size: small;
-            top: 10%;
+            top: 15%;
             left: calc(100% + var(--space-very-small));
 
           }
