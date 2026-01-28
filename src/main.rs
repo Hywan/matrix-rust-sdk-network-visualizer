@@ -66,10 +66,13 @@ fn main() {
 
     let mut spans: BTreeMap<ConnectionId, BTreeMap<RequestId, Span>> = BTreeMap::new();
 
-    for line in reader.lines().enumerate().map(|(nth, line)| {
-        line.unwrap_or_else(|error| {
-            panic!("Failed to read line #{nth}\n{error}");
-        })
+    for (line_nth, line) in reader.lines().enumerate().map(|(nth, line)| {
+        (
+            nth + 1,
+            line.unwrap_or_else(|error| {
+                panic!("Failed to read line #{nth}\n{error}");
+            }),
+        )
     }) {
         number_of_analysed_lines += 1;
 
@@ -137,6 +140,8 @@ fn main() {
                         response_size: response_size.map(ToOwned::to_owned),
                         start_at: date_time,
                         duration: TimeDelta::zero(),
+                        request_log_line: line_nth,
+                        response_log_line: None,
                     });
                 }
                 Entry::Occupied(mut entry) => {
@@ -157,6 +162,8 @@ fn main() {
                     if let Some(response_size) = response_size {
                         span.response_size = Some(response_size.to_owned());
                     }
+
+                    span.response_log_line = Some(line_nth);
                 }
             }
         }
@@ -183,7 +190,8 @@ fn main() {
                         response_size,
                         start_at,
                         duration,
-                        ..
+                        request_log_line,
+                        response_log_line
                     },
                 )| {
                     let uri_components = Url::parse(uri, None).map(|uri| uri.components());
@@ -199,7 +207,16 @@ fn main() {
       <td title=\"{path}\">{path}</td>
       <td>{request_size}</td>
       <td>{response_size}</td>
-      <td><div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration_label}</span></div></td>
+      <td>
+        <div class=\"span\" style=\"--start-at: {start_at}; --duration: {duration}\"><span>{duration_label}</span></div>
+        <details>
+          <summary><span class=\"hidden\">information</span></summary>
+          <ul>
+            <li>Request log line number: {request_log_line}</li>
+            <li>Response log line number: {response_log_line}</li>
+          </ul>
+        </dialog>
+      </td>
     </tr>
 ",
                         connection_id = connection_id.clone(),
@@ -228,7 +245,8 @@ fn main() {
                         start_at = start_at
                             .timestamp_millis()
                             .saturating_sub(smallest_start_at),
-                        duration_label = if duration > 0 { format!("{duration}ms") } else { "<em>cancelled</em>".to_owned() }
+                        duration_label = if duration > 0 { format!("{duration}ms") } else { "<em>cancelled</em>".to_owned() },
+                        response_log_line = response_log_line.map(|line| line.to_string()).unwrap_or_else(|| "(none)".to_owned()),
                     )
                 },
             )
@@ -265,4 +283,6 @@ struct Span {
     response_size: Option<String>,
     start_at: DateTime<FixedOffset>,
     duration: TimeDelta,
+    request_log_line: usize,
+    response_log_line: Option<usize>,
 }
