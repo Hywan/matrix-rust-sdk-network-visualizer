@@ -93,16 +93,21 @@
     min-width: 800px;
     border-spacing: 0;
 
-    tr {
+    th, td {
+      white-space: nowrap;
+      border: var(--color-canvas-lighterer) solid;
+      border-width: 0 1px;
+      padding: .15rem var(--space-small);
+    }
+
+    thead > tr {
+      font-weight: bold;
+      height: 3em;
+    }
+
+    tbody > tr {
       &:nth-child(even) {
         background: var(--color-canvas-lighter);
-      }
-
-      > * {
-        white-space: nowrap;
-        border: var(--color-canvas-lighterer) solid;
-        border-width: 0 1px;
-        padding: .15rem var(--space-small);
       }
 
       /* request ID */
@@ -145,7 +150,15 @@
         --_end-at: var(--end-at, 100);
 
         width: 100%;
-        max-width: 0;
+
+        --_grid-step: 15%;
+        --_grid-width: 1px;
+        background: linear-gradient(
+          90deg,
+          var(--color-canvas-lighterer) var(--_grid-width),
+          transparent var(--_grid-width)
+        );
+        background-size: var(--_grid-step);
 
         position: relative;
 
