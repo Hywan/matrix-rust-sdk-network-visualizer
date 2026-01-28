@@ -198,9 +198,9 @@ fn main() {
                     let duration = duration.num_milliseconds();
 
                     format!(
-                        "    <tr>
+                        "    <tr id=\"{connection_id}-{request_id}\">
       <td><code>{connection_id}</code></td>
-      <td><code>{request_id}</code></td>
+      <td><a href=\"#{connection_id}-{request_id}\" title=\"Permalink to this line\"><code>{request_id}</code></a></td>
       <td data-status-family=\"{status_family}\"><span>{status}</span></td>
       <td><code>{method}</code></td>
       <td title=\"{domain}\">{domain}</td>

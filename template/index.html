@@ -23,6 +23,8 @@
     --space-very-small: .25rem;
     --space-small: .5rem;
     --space: 1rem;
+    --space-large: 2rem;
+    --space-very-large: 4rem;
 
     --border-radius: 3px;
 
@@ -75,6 +77,10 @@
     }
   }
 
+  html {
+    scroll-padding-top: var(--space-very-large);
+  }
+
   body {
     font-size: .95rem;
     /* Thanks modernfontstacks.com */
@@ -83,6 +89,7 @@
     font-variant-numeric: proportional-nums slashed-zero;
     color: var(--color-text);
     background: var(--color-canvas);
+    scroll-behaviour: smooth;
   }
 
   main {
@@ -124,9 +131,19 @@
         border-radius: 2px;
       }
 
+      &:target {
+        outline: 3px yellow solid;
+        outline-offset: .1rem;
+        border-radius: var(--border-radius);
+      }
+
       /* request ID */
       > :nth-child(2) {
         text-align: end;
+
+        a {
+          color: inherit;
+        }
       }
 
       /* status */
