@@ -1,0 +1,2986 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta http-equiv="content-security-policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:">
+  <meta name="viewport" content="width=device-width, minimum-scale=1" />
+
+  <style>
+  /* Reset */
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  * { margin: 0 }
+
+  input, button, textarea, select {
+    font: inherit;
+    color: currentColor;
+  }
+
+  :root {
+    --space-very-small: .25rem;
+    --space-small: .5rem;
+    --space: 1rem;
+    --space-large: 2rem;
+    --space-very-large: 4rem;
+
+    --border-radius: 3px;
+
+    --color-accent: oklch(59.1% .236 10.25);
+    --color-text: oklch(.84 0 0);
+    --color-canvas: oklch(0.258 0.007 285.867);
+    --color-canvas-lighter: oklch(0.303 0.007 285.966);
+    --color-canvas-lighter-2: oklch(0.343 0.009 285.935);
+    --color-canvas-lighter-3: oklch(0.6 0 0);
+
+    --color-green: oklch(0.524 0.164 145.0);
+    --color-red : oklch(0.503 0.172 25.0);
+    --color-orange: oklch(0.793 0.171 70.670);
+    --color-yellow: oklch(0.968 0.211 109.769);
+  }
+
+  .content-grid {
+    --padding-inline: 1rem;
+    --content-max-width: 70ch;
+    --breakout-max-width: 85ch;
+
+    --breakout-size: calc((var(--breakout-max-width) - var(--content-max-width)) / 2);
+
+    display: grid;
+    grid-template-columns:
+      [full-width-start]
+        minmax(var(--padding-inline), 1fr)
+        [breakout-start]
+          minmax(0, var(--breakout-size))
+          [content-start]
+            min(
+              100% - (var(--padding-inline) * 2),
+              var(--content-max-width)
+            )
+          [content-end]
+          minmax(0, var(--breakout-size))
+        [breakout-end]
+        minmax(var(--padding-inline), 1fr)
+      [full-width-end];
+
+    > * {
+      grid-column: content;
+    }
+
+    > .breakout {
+      grid-column: breakout;
+    }
+
+    > .full-width {
+      grid-column: full-width;
+    }
+  }
+
+  html {
+    scroll-padding-top: var(--space-very-large);
+  }
+
+  body {
+    font-size: .95rem;
+    /* Thanks modernfontstacks.com */
+    font-family: Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial, sans-serif;
+    font-weight: normal;
+    font-variant-numeric: proportional-nums slashed-zero;
+    color: var(--color-text);
+    background: var(--color-canvas);
+    scroll-behaviour: smooth;
+  }
+
+  main {
+    padding-inline: var(--space);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style-position: inside;
+    list-style-type: "− ";
+  }
+
+  main > table {
+    width: 100%;
+    min-width: 1400px;
+    border-spacing: 0;
+
+    th, td {
+      white-space: nowrap;
+      padding: .15rem var(--space-small);
+    }
+
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--color-canvas);
+
+      tr {
+        font-weight: bold;
+        height: 3em;
+      }
+    }
+
+    tbody > tr {
+      position: relative;
+
+      &:nth-child(even) {
+        background: var(--color-canvas-lighter);
+      }
+
+      &:hover {
+        z-index: 2;
+        outline: 1px var(--color-canvas-lighter-3) dashed;
+        outline-offset: var(--space-very-small);
+        border-radius: var(--border-radius);
+      }
+
+      &:target {
+        z-index: 2;
+        outline: 3px var(--color-yellow) solid;
+        outline-offset: .1rem;
+        border-radius: var(--border-radius);
+      }
+
+      /* request ID */
+      > :nth-child(2) {
+        text-align: end;
+
+        a {
+          color: inherit;
+        }
+      }
+
+      /* status */
+      > :nth-child(3) {
+        &[data-status-family] {
+          --_background: var(--color-red);
+
+          > span {
+            width: 3em;
+            display: inline-block;
+            text-align: center;
+            border-radius: var(--border-radius);
+            padding-inline: var(--space-very-small);
+            background-color: var(--_background, transparent);
+          }
+        }
+
+        &[data-status-family="cancelled"] {
+          color: var(--color-canvas);
+          font-weight: bold;
+          --_background: var(--color-orange);
+        }
+        &[data-status-family="2"] { --_background: var(--color-green) }
+      }
+
+      /* domain and path */
+      > :nth-child(5) { --_column-width: 15ch; --_dir: ltr }
+      > :nth-child(6) { --_column-width: 20ch; --_dir: rtl }
+      > :nth-child(5),
+      > :nth-child(6) {
+        direction: var(--_dir);
+        text-overflow: ellipsis;
+        max-width: var(--_column-width);
+        overflow: hidden;
+      }
+
+      /* request size and response size */
+      > :nth-child(7),
+      > :nth-child(8) {
+        text-align: end;
+      }
+
+      /* time */
+      > :nth-child(9) {
+        font-size: small;
+        font-variant-numeric: slashed-zero tabular-nums;
+      }
+
+      > :last-child {
+        --_end-at: var(--end-at, 100);
+
+        width: 100%;
+
+        --_grid-step: 15%;
+        --_grid-width: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--color-canvas-lighter-2) var(--_grid-width),
+          transparent var(--_grid-width)
+        );
+        background-size: var(--_grid-step);
+
+        position: relative;
+
+        .span {
+          --_start-at: var(--start-at, 0);
+          --_duration: var(--duration);
+          --_background: var(--color-accent);
+          --_end-gutter: 10ch; /* spaces for the labels */
+
+          display: block;
+          position: absolute;
+          top: .15rem;
+          left: calc((var(--_start-at) * (100% - var(--_end-gutter))) / var(--_end-at));
+          width: max(1px, calc((var(--_duration) * (100% - var(--_end-gutter))) / var(--_end-at)));
+          height: 1.2rem;
+          background: var(--_background);
+          border-radius: var(--border-radius);
+
+          tr:has(> td[data-status-family="cancelled"]) & {
+            width: 3px;
+            --_background: var(--color-orange);
+          }
+
+          > span {
+            position: absolute;
+            font-size: .855em;
+            top: .1em;
+            left: calc(100% + var(--space-very-small));
+          }
+        }
+
+        details {
+          text-align: end;
+
+          summary {
+            pointer: cursor;
+            height: 1em;
+            width: 100%;
+
+            list-style: none;
+            &::marker,
+            &::-webkit-details-marker {
+              content: none; /* all browsers */
+              display: none; /* WebKit */
+            }
+
+            &::after {
+              position: absolute;
+              top: 0;
+              right: var(--space-small);
+
+              content: '+';
+              font-weight: bold;
+            }
+          }
+
+          &[open] {
+            margin-bottom: var(--space-small);
+
+            summary {
+              margin-bottom: var(--space-small);
+
+              &::after {
+                content: '−' !important;
+              }
+            }
+          }
+
+          summary ~ * {
+            text-align: start;
+            font-size: small;
+          }
+        }
+      }
+    }
+  }
+
+  code {
+    /* Thanks modernfontstacks.com */
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+    font-weight: normal;
+    font-size: .9em;
+  }
+
+  .hidden {
+    display: none;
+  }
+  </style>
+
+  <title>Network viewer</title>
+</head>
+
+<body class="content-grid">
+
+<nav>Nav</nav>
+
+<main class="full-width">
+
+<table>
+  <thead>
+    <tr>
+      <th scope="col"><abbr title="Connection">Conn.</abbr> ID</th>
+      <th scope="col"><abbr title="Request">Req.</abbr> ID</th>
+      <th scope="col">Status</th>
+      <th scope="col"><abbr title="Method">Meth.</th>
+      <th scope="col">Domain</th>
+      <th scope="col">Path</th>
+      <th scope="col"><abbr title="Request">Req.</abbr> size</th>
+      <th scope="col"><abbr title="Response">Resp.</abbr> size</th>
+      <th scope="col">Time</th>
+      <th scope="col">Timeline</th>
+    </tr>
+  </thead>
+
+  <tbody style="--end-at: 304209">
+        <tr id="encryption-14">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-14" title="Permalink to this line"><code>14</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>92B</td>
+      <td>340B</td>
+      <td>14:01:41.628</td>
+      <td>
+        <div class="span" style="--start-at: 0; --duration: 890"><span>890ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 75</li>
+            <li>Response log line number: 110</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-33">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-33" title="Permalink to this line"><code>33</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>654B</td>
+      <td>14:01:53.661</td>
+      <td>
+        <div class="span" style="--start-at: 12033; --duration: 2471"><span>2471ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 422</li>
+            <li>Response log line number: 439</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-39">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-39" title="Permalink to this line"><code>39</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>797B</td>
+      <td>14:01:59.720</td>
+      <td>
+        <div class="span" style="--start-at: 18092; --duration: 2869"><span>2869ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 450</li>
+            <li>Response log line number: 464</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-44">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-44" title="Permalink to this line"><code>44</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>783B</td>
+      <td>14:02:11.305</td>
+      <td>
+        <div class="span" style="--start-at: 29677; --duration: 3567"><span>3567ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 479</li>
+            <li>Response log line number: 482</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-45">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-45" title="Permalink to this line"><code>45</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>2.8k</td>
+      <td>14:02:14.889</td>
+      <td>
+        <div class="span" style="--start-at: 33261; --duration: 3055"><span>3055ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 485</li>
+            <li>Response log line number: 490</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-47">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-47" title="Permalink to this line"><code>47</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>523B</td>
+      <td>14:02:17.966</td>
+      <td>
+        <div class="span" style="--start-at: 36338; --duration: 3461"><span>3461ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 500</li>
+            <li>Response log line number: 502</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-48">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-48" title="Permalink to this line"><code>48</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>2.7k</td>
+      <td>14:02:21.445</td>
+      <td>
+        <div class="span" style="--start-at: 39817; --duration: 2517"><span>2517ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 509</li>
+            <li>Response log line number: 520</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-50">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-50" title="Permalink to this line"><code>50</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>432B</td>
+      <td>14:02:23.974</td>
+      <td>
+        <div class="span" style="--start-at: 42346; --duration: 1550"><span>1550ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 528</li>
+            <li>Response log line number: 530</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-51">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-51" title="Permalink to this line"><code>51</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>841B</td>
+      <td>14:02:25.539</td>
+      <td>
+        <div class="span" style="--start-at: 43911; --duration: 1722"><span>1722ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 532</li>
+            <li>Response log line number: 536</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-52">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-52" title="Permalink to this line"><code>52</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>591B</td>
+      <td>14:02:27.278</td>
+      <td>
+        <div class="span" style="--start-at: 45650; --duration: 1622"><span>1622ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 547</li>
+            <li>Response log line number: 563</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-58">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-58" title="Permalink to this line"><code>58</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>2.8k</td>
+      <td>14:02:28.916</td>
+      <td>
+        <div class="span" style="--start-at: 47288; --duration: 1574"><span>1574ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 566</li>
+            <li>Response log line number: 568</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-66">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-66" title="Permalink to this line"><code>66</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>5.8k</td>
+      <td>14:02:34.537</td>
+      <td>
+        <div class="span" style="--start-at: 52909; --duration: 1636"><span>1636ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1094</li>
+            <li>Response log line number: 1100</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-110">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-110" title="Permalink to this line"><code>110</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>971B</td>
+      <td>14:02:40.341</td>
+      <td>
+        <div class="span" style="--start-at: 58713; --duration: 2229"><span>2229ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1353</li>
+            <li>Response log line number: 1501</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-115">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-115" title="Permalink to this line"><code>115</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>405B</td>
+      <td>14:02:42.587</td>
+      <td>
+        <div class="span" style="--start-at: 60959; --duration: 2595"><span>2595ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1505</li>
+            <li>Response log line number: 1507</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-116">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-116" title="Permalink to this line"><code>116</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>362B</td>
+      <td>14:02:45.190</td>
+      <td>
+        <div class="span" style="--start-at: 63562; --duration: 3372"><span>3372ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1508</li>
+            <li>Response log line number: 1510</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-117">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-117" title="Permalink to this line"><code>117</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>415B</td>
+      <td>14:02:48.579</td>
+      <td>
+        <div class="span" style="--start-at: 66951; --duration: 3157"><span>3157ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1511</li>
+            <li>Response log line number: 1513</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-118">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-118" title="Permalink to this line"><code>118</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>416B</td>
+      <td>14:02:51.751</td>
+      <td>
+        <div class="span" style="--start-at: 70123; --duration: 2750"><span>2750ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1514</li>
+            <li>Response log line number: 1516</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-119">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-119" title="Permalink to this line"><code>119</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>362B</td>
+      <td>14:02:54.518</td>
+      <td>
+        <div class="span" style="--start-at: 72890; --duration: 2645"><span>2645ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1517</li>
+            <li>Response log line number: 1519</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-120">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-120" title="Permalink to this line"><code>120</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>423B</td>
+      <td>14:02:57.179</td>
+      <td>
+        <div class="span" style="--start-at: 75551; --duration: 2749"><span>2749ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1520</li>
+            <li>Response log line number: 1522</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-121">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-121" title="Permalink to this line"><code>121</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>405B</td>
+      <td>14:02:59.945</td>
+      <td>
+        <div class="span" style="--start-at: 78317; --duration: 1314"><span>1314ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1523</li>
+            <li>Response log line number: 1525</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-122">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-122" title="Permalink to this line"><code>122</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>420B</td>
+      <td>14:03:01.275</td>
+      <td>
+        <div class="span" style="--start-at: 79647; --duration: 3263"><span>3263ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1526</li>
+            <li>Response log line number: 1528</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-123">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-123" title="Permalink to this line"><code>123</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>391B</td>
+      <td>14:03:04.555</td>
+      <td>
+        <div class="span" style="--start-at: 82927; --duration: 2133"><span>2133ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1529</li>
+            <li>Response log line number: 1537</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-126">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-126" title="Permalink to this line"><code>126</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>2.7k</td>
+      <td>14:03:08.241</td>
+      <td>
+        <div class="span" style="--start-at: 86613; --duration: 1421"><span>1421ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1543</li>
+            <li>Response log line number: 1560</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-130">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-130" title="Permalink to this line"><code>130</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>412B</td>
+      <td>14:03:09.683</td>
+      <td>
+        <div class="span" style="--start-at: 88055; --duration: 703"><span>703ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1569</li>
+            <li>Response log line number: 1571</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-131">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-131" title="Permalink to this line"><code>131</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>396B</td>
+      <td>14:03:10.400</td>
+      <td>
+        <div class="span" style="--start-at: 88772; --duration: 418"><span>418ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1572</li>
+            <li>Response log line number: 1574</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-132">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-132" title="Permalink to this line"><code>132</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>410B</td>
+      <td>14:03:10.834</td>
+      <td>
+        <div class="span" style="--start-at: 89206; --duration: 6915"><span>6915ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1575</li>
+            <li>Response log line number: 2233</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-161">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-161" title="Permalink to this line"><code>161</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>375B</td>
+      <td>14:03:17.764</td>
+      <td>
+        <div class="span" style="--start-at: 96136; --duration: 595"><span>595ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2234</li>
+            <li>Response log line number: 2238</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-163">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-163" title="Permalink to this line"><code>163</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>367B</td>
+      <td>14:03:19.945</td>
+      <td>
+        <div class="span" style="--start-at: 98317; --duration: 9270"><span>9270ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2252</li>
+            <li>Response log line number: 2254</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-164">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-164" title="Permalink to this line"><code>164</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>386B</td>
+      <td>14:03:29.231</td>
+      <td>
+        <div class="span" style="--start-at: 107603; --duration: 10514"><span>10514ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2255</li>
+            <li>Response log line number: 2257</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-165">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-165" title="Permalink to this line"><code>165</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>382B</td>
+      <td>14:03:39.761</td>
+      <td>
+        <div class="span" style="--start-at: 118133; --duration: 2029"><span>2029ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2258</li>
+            <li>Response log line number: 2260</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-166">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-166" title="Permalink to this line"><code>166</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:03:41.794</td>
+      <td>
+        <div class="span" style="--start-at: 120166; --duration: 400"><span>400ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2261</li>
+            <li>Response log line number: 2263</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-167">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-167" title="Permalink to this line"><code>167</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>410B</td>
+      <td>14:03:42.204</td>
+      <td>
+        <div class="span" style="--start-at: 120576; --duration: 8002"><span>8002ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2264</li>
+            <li>Response log line number: 2707</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-181">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-181" title="Permalink to this line"><code>181</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>401B</td>
+      <td>14:03:50.219</td>
+      <td>
+        <div class="span" style="--start-at: 128591; --duration: 1175"><span>1175ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2708</li>
+            <li>Response log line number: 2714</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-185">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-185" title="Permalink to this line"><code>185</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>416B</td>
+      <td>14:03:51.720</td>
+      <td>
+        <div class="span" style="--start-at: 130092; --duration: 1005"><span>1005ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2724</li>
+            <li>Response log line number: 2749</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-198">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-198" title="Permalink to this line"><code>198</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>390B</td>
+      <td>14:03:52.731</td>
+      <td>
+        <div class="span" style="--start-at: 131103; --duration: 948"><span>948ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2750</li>
+            <li>Response log line number: 2769</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-207">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-207" title="Permalink to this line"><code>207</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>383B</td>
+      <td>14:03:53.685</td>
+      <td>
+        <div class="span" style="--start-at: 132057; --duration: 5601"><span>5601ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2770</li>
+            <li>Response log line number: 2814</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-229">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-229" title="Permalink to this line"><code>229</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>362B</td>
+      <td>14:03:59.301</td>
+      <td>
+        <div class="span" style="--start-at: 137673; --duration: 2272"><span>2272ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2815</li>
+            <li>Response log line number: 2817</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-230">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-230" title="Permalink to this line"><code>230</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>416B</td>
+      <td>14:04:01.588</td>
+      <td>
+        <div class="span" style="--start-at: 139960; --duration: 3056"><span>3056ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2818</li>
+            <li>Response log line number: 2820</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-231">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-231" title="Permalink to this line"><code>231</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>368B</td>
+      <td>14:04:04.648</td>
+      <td>
+        <div class="span" style="--start-at: 143020; --duration: 4453"><span>4453ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2821</li>
+            <li>Response log line number: 2825</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-233">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-233" title="Permalink to this line"><code>233</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:04:09.118</td>
+      <td>
+        <div class="span" style="--start-at: 147490; --duration: 1978"><span>1978ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2826</li>
+            <li>Response log line number: 2828</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-234">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-234" title="Permalink to this line"><code>234</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:04:11.112</td>
+      <td>
+        <div class="span" style="--start-at: 149484; --duration: 2135"><span>2135ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2829</li>
+            <li>Response log line number: 2833</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-236">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-236" title="Permalink to this line"><code>236</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>424B</td>
+      <td>14:04:13.262</td>
+      <td>
+        <div class="span" style="--start-at: 151634; --duration: 3158"><span>3158ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2834</li>
+            <li>Response log line number: 2836</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-237">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-237" title="Permalink to this line"><code>237</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>401B</td>
+      <td>14:04:16.425</td>
+      <td>
+        <div class="span" style="--start-at: 154797; --duration: 1738"><span>1738ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2837</li>
+            <li>Response log line number: 2841</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-239">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-239" title="Permalink to this line"><code>239</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>362B</td>
+      <td>14:04:18.175</td>
+      <td>
+        <div class="span" style="--start-at: 156547; --duration: 3981"><span>3981ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2842</li>
+            <li>Response log line number: 2850</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-243">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-243" title="Permalink to this line"><code>243</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>367B</td>
+      <td>14:04:22.171</td>
+      <td>
+        <div class="span" style="--start-at: 160543; --duration: 1725"><span>1725ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2851</li>
+            <li>Response log line number: 2853</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-244">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-244" title="Permalink to this line"><code>244</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:04:23.913</td>
+      <td>
+        <div class="span" style="--start-at: 162285; --duration: 1637"><span>1637ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2854</li>
+            <li>Response log line number: 2873</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-256">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-256" title="Permalink to this line"><code>256</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>389B</td>
+      <td>14:04:25.553</td>
+      <td>
+        <div class="span" style="--start-at: 163925; --duration: 1820"><span>1820ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2874</li>
+            <li>Response log line number: 3063</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-348">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-348" title="Permalink to this line"><code>348</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>465B</td>
+      <td>14:04:27.380</td>
+      <td>
+        <div class="span" style="--start-at: 165752; --duration: 1031"><span>1031ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3064</li>
+            <li>Response log line number: 3072</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-352">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-352" title="Permalink to this line"><code>352</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>430B</td>
+      <td>14:04:28.421</td>
+      <td>
+        <div class="span" style="--start-at: 166793; --duration: 2541"><span>2541ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3073</li>
+            <li>Response log line number: 3108</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-369">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-369" title="Permalink to this line"><code>369</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>444B</td>
+      <td>14:04:30.978</td>
+      <td>
+        <div class="span" style="--start-at: 169350; --duration: 15344"><span>15344ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3109</li>
+            <li>Response log line number: 3113</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-370">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-370" title="Permalink to this line"><code>370</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>452B</td>
+      <td>14:04:46.337</td>
+      <td>
+        <div class="span" style="--start-at: 184709; --duration: 6538"><span>6538ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3114</li>
+            <li>Response log line number: 3116</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-371">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-371" title="Permalink to this line"><code>371</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>396B</td>
+      <td>14:04:52.887</td>
+      <td>
+        <div class="span" style="--start-at: 191259; --duration: 165"><span>165ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3117</li>
+            <li>Response log line number: 3119</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-372">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-372" title="Permalink to this line"><code>372</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>402B</td>
+      <td>14:04:53.068</td>
+      <td>
+        <div class="span" style="--start-at: 191440; --duration: 53"><span>53ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3120</li>
+            <li>Response log line number: 3122</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-373">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-373" title="Permalink to this line"><code>373</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>421B</td>
+      <td>14:04:53.134</td>
+      <td>
+        <div class="span" style="--start-at: 191506; --duration: 51"><span>51ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3123</li>
+            <li>Response log line number: 3125</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-374">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-374" title="Permalink to this line"><code>374</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>423B</td>
+      <td>14:04:53.200</td>
+      <td>
+        <div class="span" style="--start-at: 191572; --duration: 185"><span>185ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3126</li>
+            <li>Response log line number: 3128</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-375">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-375" title="Permalink to this line"><code>375</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>375B</td>
+      <td>14:04:53.400</td>
+      <td>
+        <div class="span" style="--start-at: 191772; --duration: 39"><span>39ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3129</li>
+            <li>Response log line number: 3131</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-376">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-376" title="Permalink to this line"><code>376</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>380B</td>
+      <td>14:04:53.455</td>
+      <td>
+        <div class="span" style="--start-at: 191827; --duration: 547"><span>547ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3132</li>
+            <li>Response log line number: 3134</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-377">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-377" title="Permalink to this line"><code>377</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:04:54.017</td>
+      <td>
+        <div class="span" style="--start-at: 192389; --duration: 5456"><span>5456ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3135</li>
+            <li>Response log line number: 3137</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-378">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-378" title="Permalink to this line"><code>378</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>399B</td>
+      <td>14:04:59.488</td>
+      <td>
+        <div class="span" style="--start-at: 197860; --duration: 965"><span>965ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3138</li>
+            <li>Response log line number: 3140</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-379">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-379" title="Permalink to this line"><code>379</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>400B</td>
+      <td>14:05:00.469</td>
+      <td>
+        <div class="span" style="--start-at: 198841; --duration: 830"><span>830ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3141</li>
+            <li>Response log line number: 3145</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-380">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-380" title="Permalink to this line"><code>380</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:05:01.301</td>
+      <td>
+        <div class="span" style="--start-at: 199673; --duration: 118"><span>118ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3146</li>
+            <li>Response log line number: 3148</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-381">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-381" title="Permalink to this line"><code>381</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>367B</td>
+      <td>14:05:01.426</td>
+      <td>
+        <div class="span" style="--start-at: 199798; --duration: 2210"><span>2210ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3149</li>
+            <li>Response log line number: 3151</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-382">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-382" title="Permalink to this line"><code>382</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>420B</td>
+      <td>14:05:03.654</td>
+      <td>
+        <div class="span" style="--start-at: 202026; --duration: 6526"><span>6526ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3152</li>
+            <li>Response log line number: 3637</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-419">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-419" title="Permalink to this line"><code>419</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:05:10.193</td>
+      <td>
+        <div class="span" style="--start-at: 208565; --duration: 3472"><span>3472ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3638</li>
+            <li>Response log line number: 3655</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-424">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-424" title="Permalink to this line"><code>424</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>346B</td>
+      <td>14:05:13.680</td>
+      <td>
+        <div class="span" style="--start-at: 212052; --duration: 1110"><span>1110ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3656</li>
+            <li>Response log line number: 3658</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-425">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-425" title="Permalink to this line"><code>425</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>362B</td>
+      <td>14:05:14.807</td>
+      <td>
+        <div class="span" style="--start-at: 213179; --duration: 1005"><span>1005ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3659</li>
+            <li>Response log line number: 3664</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-429">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-429" title="Permalink to this line"><code>429</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>367B</td>
+      <td>14:05:15.815</td>
+      <td>
+        <div class="span" style="--start-at: 214187; --duration: 14027"><span>14027ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3665</li>
+            <li>Response log line number: 3700</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-445">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-445" title="Permalink to this line"><code>445</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>416B</td>
+      <td>14:05:29.859</td>
+      <td>
+        <div class="span" style="--start-at: 228231; --duration: 1216"><span>1216ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3701</li>
+            <li>Response log line number: 3703</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-446">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-446" title="Permalink to this line"><code>446</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>361B</td>
+      <td>14:05:31.090</td>
+      <td>
+        <div class="span" style="--start-at: 229462; --duration: 1107"><span>1107ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3704</li>
+            <li>Response log line number: 3706</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-447">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-447" title="Permalink to this line"><code>447</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>407B</td>
+      <td>14:05:32.213</td>
+      <td>
+        <div class="span" style="--start-at: 230585; --duration: 10224"><span>10224ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3707</li>
+            <li>Response log line number: 3709</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-448">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-448" title="Permalink to this line"><code>448</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>407B</td>
+      <td>14:05:42.453</td>
+      <td>
+        <div class="span" style="--start-at: 240825; --duration: 2237"><span>2237ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3710</li>
+            <li>Response log line number: 3712</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-449">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-449" title="Permalink to this line"><code>449</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>420B</td>
+      <td>14:05:44.706</td>
+      <td>
+        <div class="span" style="--start-at: 243078; --duration: 11920"><span>11920ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3713</li>
+            <li>Response log line number: 3719</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-452">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-452" title="Permalink to this line"><code>452</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>442B</td>
+      <td>14:05:56.642</td>
+      <td>
+        <div class="span" style="--start-at: 255014; --duration: 2691"><span>2691ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3720</li>
+            <li>Response log line number: 3724</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-454">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-454" title="Permalink to this line"><code>454</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>383B</td>
+      <td>14:05:59.349</td>
+      <td>
+        <div class="span" style="--start-at: 257721; --duration: 3947"><span>3947ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3725</li>
+            <li>Response log line number: 3740</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-459">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-459" title="Permalink to this line"><code>459</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>420B</td>
+      <td>14:06:03.306</td>
+      <td>
+        <div class="span" style="--start-at: 261678; --duration: 10484"><span>10484ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3741</li>
+            <li>Response log line number: 3793</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-483">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-483" title="Permalink to this line"><code>483</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>421B</td>
+      <td>14:06:13.803</td>
+      <td>
+        <div class="span" style="--start-at: 272175; --duration: 8367"><span>8367ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3794</li>
+            <li>Response log line number: 3798</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-484">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-484" title="Permalink to this line"><code>484</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>423B</td>
+      <td>14:06:22.185</td>
+      <td>
+        <div class="span" style="--start-at: 280557; --duration: 5928"><span>5928ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3799</li>
+            <li>Response log line number: 3801</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-485">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-485" title="Permalink to this line"><code>485</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>362B</td>
+      <td>14:06:28.129</td>
+      <td>
+        <div class="span" style="--start-at: 286501; --duration: 1003"><span>1003ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3802</li>
+            <li>Response log line number: 3804</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-486">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-486" title="Permalink to this line"><code>486</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>416B</td>
+      <td>14:06:29.144</td>
+      <td>
+        <div class="span" style="--start-at: 287516; --duration: 1882"><span>1882ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3805</li>
+            <li>Response log line number: 3807</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-487">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-487" title="Permalink to this line"><code>487</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>367B</td>
+      <td>14:06:31.030</td>
+      <td>
+        <div class="span" style="--start-at: 289402; --duration: 651"><span>651ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3808</li>
+            <li>Response log line number: 3810</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-488">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-488" title="Permalink to this line"><code>488</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>361B</td>
+      <td>14:06:31.683</td>
+      <td>
+        <div class="span" style="--start-at: 290055; --duration: 141"><span>141ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3811</li>
+            <li>Response log line number: 3813</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-489">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-489" title="Permalink to this line"><code>489</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>367B</td>
+      <td>14:06:31.826</td>
+      <td>
+        <div class="span" style="--start-at: 290198; --duration: 150"><span>150ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3814</li>
+            <li>Response log line number: 4021</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-490">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-490" title="Permalink to this line"><code>490</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>428B</td>
+      <td>14:06:32.189</td>
+      <td>
+        <div class="span" style="--start-at: 290561; --duration: 1140"><span>1140ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4026</li>
+            <li>Response log line number: 4163</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-499">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-499" title="Permalink to this line"><code>499</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>382B</td>
+      <td>14:06:33.333</td>
+      <td>
+        <div class="span" style="--start-at: 291705; --duration: 9726"><span>9726ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4164</li>
+            <li>Response log line number: 4166</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-500">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-500" title="Permalink to this line"><code>500</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>414B</td>
+      <td>14:06:43.074</td>
+      <td>
+        <div class="span" style="--start-at: 301446; --duration: 2339"><span>2339ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4167</li>
+            <li>Response log line number: 4169</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-501">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-501" title="Permalink to this line"><code>501</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td>373B</td>
+      <td>14:06:45.429</td>
+      <td>
+        <div class="span" style="--start-at: 303801; --duration: 394"><span>394ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4170</li>
+            <li>Response log line number: 4172</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="encryption-502">
+      <td><code>encryption</code></td>
+      <td><a href="#encryption-502" title="Permalink to this line"><code>502</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>113B</td>
+      <td></td>
+      <td>14:06:45.837</td>
+      <td>
+        <div class="span" style="--start-at: 304209; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4173</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-15">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-15" title="Permalink to this line"><code>15</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>647B</td>
+      <td>187.5k</td>
+      <td>14:01:41.630</td>
+      <td>
+        <div class="span" style="--start-at: 2; --duration: 10205"><span>10205ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 77</li>
+            <li>Response log line number: 158</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-26">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-26" title="Permalink to this line"><code>26</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>647B</td>
+      <td></td>
+      <td>14:01:53.492</td>
+      <td>
+        <div class="span" style="--start-at: 11864; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 380</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-38">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-38" title="Permalink to this line"><code>38</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>3.8k</td>
+      <td>912.7k</td>
+      <td>14:01:54.057</td>
+      <td>
+        <div class="span" style="--start-at: 12429; --duration: 36780"><span>36780ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 438</li>
+            <li>Response log line number: 585</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-65">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-65" title="Permalink to this line"><code>65</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>3.8k</td>
+      <td></td>
+      <td>14:02:31.383</td>
+      <td>
+        <div class="span" style="--start-at: 49755; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1089</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-114">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-114" title="Permalink to this line"><code>114</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td>1.1M</td>
+      <td>14:02:41.227</td>
+      <td>
+        <div class="span" style="--start-at: 59599; --duration: 29666"><span>29666ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1499</li>
+            <li>Response log line number: 1579</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-133">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-133" title="Permalink to this line"><code>133</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td></td>
+      <td>14:03:11.215</td>
+      <td>
+        <div class="span" style="--start-at: 89587; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 1959</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-155">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-155" title="Permalink to this line"><code>155</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td>619.9k</td>
+      <td>14:03:11.438</td>
+      <td>
+        <div class="span" style="--start-at: 89810; --duration: 36628"><span>36628ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2138</li>
+            <li>Response log line number: 2269</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-168">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-168" title="Permalink to this line"><code>168</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td></td>
+      <td>14:03:48.342</td>
+      <td>
+        <div class="span" style="--start-at: 126714; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2528</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-180">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-180" title="Permalink to this line"><code>180</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td></td>
+      <td>14:03:48.655</td>
+      <td>
+        <div class="span" style="--start-at: 127027; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2661</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-225">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-225" title="Permalink to this line"><code>225</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:03:56.108</td>
+      <td>
+        <div class="span" style="--start-at: 134480; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2807</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-226">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-226" title="Permalink to this line"><code>226</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:03:57.119</td>
+      <td>
+        <div class="span" style="--start-at: 135491; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2809</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-227">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-227" title="Permalink to this line"><code>227</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:03:58.232</td>
+      <td>
+        <div class="span" style="--start-at: 136604; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2811</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-228">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-228" title="Permalink to this line"><code>228</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:03:59.281</td>
+      <td>
+        <div class="span" style="--start-at: 137653; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2813</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-232">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-232" title="Permalink to this line"><code>232</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td></td>
+      <td>14:04:06.122</td>
+      <td>
+        <div class="span" style="--start-at: 144494; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2824</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-235">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-235" title="Permalink to this line"><code>235</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:04:11.895</td>
+      <td>
+        <div class="span" style="--start-at: 150267; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2832</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-240">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-240" title="Permalink to this line"><code>240</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:04:18.552</td>
+      <td>
+        <div class="span" style="--start-at: 156924; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2845</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-241">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-241" title="Permalink to this line"><code>241</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:04:19.070</td>
+      <td>
+        <div class="span" style="--start-at: 157442; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2847</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-242">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-242" title="Permalink to this line"><code>242</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:04:20.363</td>
+      <td>
+        <div class="span" style="--start-at: 158735; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 2849</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-349">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-349" title="Permalink to this line"><code>349</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:04:27.496</td>
+      <td>
+        <div class="span" style="--start-at: 165868; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3067</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-351">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-351" title="Permalink to this line"><code>351</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:04:28.020</td>
+      <td>
+        <div class="span" style="--start-at: 166392; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3071</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-367">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-367" title="Permalink to this line"><code>367</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.3k</td>
+      <td></td>
+      <td>14:04:29.143</td>
+      <td>
+        <div class="span" style="--start-at: 167515; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3104</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-368">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-368" title="Permalink to this line"><code>368</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td>1.2M</td>
+      <td>14:04:29.646</td>
+      <td>
+        <div class="span" style="--start-at: 168018; --duration: 36743"><span>36743ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3106</li>
+            <li>Response log line number: 3154</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-383">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-383" title="Permalink to this line"><code>383</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:05:07.294</td>
+      <td>
+        <div class="span" style="--start-at: 205666; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3390</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-399">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-399" title="Permalink to this line"><code>399</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>7.4k</td>
+      <td></td>
+      <td>14:05:07.823</td>
+      <td>
+        <div class="span" style="--start-at: 206195; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3595</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-401">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-401" title="Permalink to this line"><code>401</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:05:08.329</td>
+      <td>
+        <div class="span" style="--start-at: 206701; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3602</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-422">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-422" title="Permalink to this line"><code>422</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:05:10.792</td>
+      <td>
+        <div class="span" style="--start-at: 209164; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3645</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-423">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-423" title="Permalink to this line"><code>423</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:05:11.823</td>
+      <td>
+        <div class="span" style="--start-at: 210195; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3654</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-442">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-442" title="Permalink to this line"><code>442</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:05:16.218</td>
+      <td>
+        <div class="span" style="--start-at: 214590; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3695</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-444">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-444" title="Permalink to this line"><code>444</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:05:21.354</td>
+      <td>
+        <div class="span" style="--start-at: 219726; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3699</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-450">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-450" title="Permalink to this line"><code>450</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.4k</td>
+      <td></td>
+      <td>14:05:48.337</td>
+      <td>
+        <div class="span" style="--start-at: 246709; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3716</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-451">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-451" title="Permalink to this line"><code>451</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:05:56.399</td>
+      <td>
+        <div class="span" style="--start-at: 254771; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3718</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-453">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-453" title="Permalink to this line"><code>453</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.4k</td>
+      <td></td>
+      <td>14:05:58.052</td>
+      <td>
+        <div class="span" style="--start-at: 256424; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3723</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-470">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-470" title="Permalink to this line"><code>470</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:06:07.026</td>
+      <td>
+        <div class="span" style="--start-at: 265398; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3764</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-475">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-475" title="Permalink to this line"><code>475</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:06:07.541</td>
+      <td>
+        <div class="span" style="--start-at: 265913; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3774</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-476">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-476" title="Permalink to this line"><code>476</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>4.8k</td>
+      <td></td>
+      <td>14:06:09.147</td>
+      <td>
+        <div class="span" style="--start-at: 267519; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3776</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-477">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-477" title="Permalink to this line"><code>477</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.3k</td>
+      <td></td>
+      <td>14:06:09.657</td>
+      <td>
+        <div class="span" style="--start-at: 268029; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3778</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-478">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-478" title="Permalink to this line"><code>478</code></a></td>
+      <td data-status-family="2"><span>200</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td>1.3M</td>
+      <td>14:06:10.166</td>
+      <td>
+        <div class="span" style="--start-at: 268538; --duration: 21729"><span>21729ms</span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 3780</li>
+            <li>Response log line number: 3816</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-492">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-492" title="Permalink to this line"><code>492</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:06:32.208</td>
+      <td>
+        <div class="span" style="--start-at: 290580; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4046</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+    <tr id="room-list-498">
+      <td><code>room-list</code></td>
+      <td><a href="#room-list-498" title="Permalink to this line"><code>498</code></a></td>
+      <td data-status-family="cancelled"><span>×</span></td>
+      <td><code>POST</code></td>
+      <td title="matrix-client.matrix.org">matrix-client.matrix.org</td>
+      <td title="/_matrix/client/unstable/org.matrix.simplified_msc3575/sync">/_matrix/client/unstable/org.matrix.simplified_msc3575/sync</td>
+      <td>5.9k</td>
+      <td></td>
+      <td>14:06:32.653</td>
+      <td>
+        <div class="span" style="--start-at: 291025; --duration: 0"><span><em>cancelled</em></span></div>
+        <details>
+          <summary><span class="hidden">information</span></summary>
+          <ul>
+            <li>Request log line number: 4161</li>
+            <li>Response log line number: (none)</li>
+          </ul>
+        </dialog>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+
+</main>
+
+</body>
+</html>
